@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 public class EndOfEverfallEditorTarget : TargetRules
 {
-	public EndOfEverfallEditorTarget(TargetInfo Target) : base(Target)
+	public EndOfEverfallEditorTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.Add("EndOfEverfall");
+		ExtraModuleNames.AddRange( new string[] { "EndOfEverfall" } );
 	}
 }
