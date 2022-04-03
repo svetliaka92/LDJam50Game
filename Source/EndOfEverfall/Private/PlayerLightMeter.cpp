@@ -25,6 +25,5 @@ void UPlayerLightMeter::UpdateLightMeterUI(float Value)
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Light value: %f"), Value);
 	LightBar->SetPercent(Value / MaxLight);
 }

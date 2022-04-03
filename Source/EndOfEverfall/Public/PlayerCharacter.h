@@ -4,12 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "CrystalType.h"
 #include "PlayerCharacter.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class ULightMeterComponent;
 class UPlayerLightMeter;
+class UInventoryComponent;
+class UInventoryUI;
+class UHelperUI;
 
 UCLASS()
 class ENDOFEVERFALL_API APlayerCharacter : public ACharacter
@@ -21,18 +25,29 @@ public:
 	APlayerCharacter();
 
 protected:
+	virtual void Tick(float DeltaTime) override;
+
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
+	UCameraComponent* FollowCamera = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Light meter", meta = (AllowPrivateAccess = "true"))
-	ULightMeterComponent* LightMeter;
+	ULightMeterComponent* LightMeter = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Light meter", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UPlayerLightMeter> LightMeterUIClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	UInventoryComponent* Inventory = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	TSubclassOf<UInventoryUI> InventoryUIClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interacting")
+	TSubclassOf<UHelperUI> HelperUIClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseTurnRate = 45.0f;
@@ -41,7 +56,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookUpRate = 45.0f;
 
-	UPlayerLightMeter* LightMeterUI;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Reach")
+	float Reach = 3.0f;
+
+	UPlayerLightMeter* LightMeterUI = nullptr;
+	UInventoryUI* InventoryUI = nullptr;
+	UHelperUI* HelperUI = nullptr;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -63,6 +83,25 @@ protected:
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void LookUpAtRate(float Rate);
+
+	void UseSmallCrystal();
+	void UseMediumCrystal();
+	void UseLargeCrystal();
+
+	UFUNCTION()
+	void UseCrystal(ECrystalType CrystalType);
+
+	UFUNCTION()
+	void TakeCrystal();
+
+	void OnCrystalUsed(ECrystalType CrystalType);
+
+	bool CheckForCrystal();
+
+private:
+	FHitResult GetFirstCrystalInReach() const;
+	FVector GetPlayerWorldPosition() const;
+	FVector GetPlayerReach() const;
 
 public:	
 	// Called to bind functionality to input

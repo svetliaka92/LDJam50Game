@@ -14,7 +14,6 @@ void ULightMeterComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
 	LightAmount = MaxLightAmount;
 }
 
@@ -36,7 +35,7 @@ void ULightMeterComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 void ULightMeterComponent::AddLightAmount(float Value)
 {
-
+	LightAmount = FMath::Min(MaxLightAmount, LightAmount + Value);
 }
 
 

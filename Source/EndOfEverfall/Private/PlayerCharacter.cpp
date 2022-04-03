@@ -6,20 +6,25 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "LightMeterComponent.h"
 #include "PlayerLightMeter.h"
+#include "InventoryComponent.h"
+#include "InventoryUI.h"
+#include "BaseCrystal.h"
+#include "HelperUI.h"
 
 
 APlayerCharacter::APlayerCharacter()
 {
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->TargetArmLength = 0.0f;
+	CameraBoom->bUsePawnControlRotation = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
 	LightMeter = CreateDefaultSubobject<ULightMeterComponent>(TEXT("Light meter"));
+	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 }
 
 
@@ -36,7 +41,43 @@ void APlayerCharacter::BeginPlay()
 			LightMeterUI->AddToViewport();
 		}
 	}
+
+	if (IsValid(Inventory))
+	{
+		Inventory->Init();
+		Inventory->CrystalUsed().AddUObject(this, &APlayerCharacter::OnCrystalUsed);
+	}
 	
+	if (IsValid(InventoryUIClass))
+	{
+		InventoryUI = CreateWidget<UInventoryUI>(GetWorld(), InventoryUIClass);
+		if (IsValid(InventoryUI))
+		{
+			InventoryUI->Init(Inventory);
+			InventoryUI->AddToViewport();
+		}
+	}
+
+	if (IsValid(HelperUIClass))
+	{
+		HelperUI = CreateWidget<UHelperUI>(GetWorld(), HelperUIClass);
+		if (HelperUI)
+		{
+			HelperUI->AddToViewport();
+		}
+	}
+}
+
+
+void APlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// enable help UI
+	if (IsValid(HelperUI))
+	{
+		HelperUI->SetClickHelperVisible(CheckForCrystal());
+	}
 }
 
 
@@ -56,6 +97,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("TurnRate", this, &APlayerCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &APlayerCharacter::LookUpAtRate);
+
+	PlayerInputComponent->BindAction("UseSmallCrystal", IE_Pressed, this, &APlayerCharacter::UseSmallCrystal);
+	PlayerInputComponent->BindAction("UseMediumCrystal", IE_Pressed, this, &APlayerCharacter::UseMediumCrystal);
+	PlayerInputComponent->BindAction("UseLargeCrystal", IE_Pressed, this, &APlayerCharacter::UseLargeCrystal);
+
+	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &APlayerCharacter::TakeCrystal);
 }
 
 
@@ -101,4 +148,126 @@ void APlayerCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+
+void APlayerCharacter::UseSmallCrystal()
+{
+	UseCrystal(ECrystalType::Small);
+}
+
+
+void APlayerCharacter::UseMediumCrystal()
+{
+	UseCrystal(ECrystalType::Medium);
+}
+
+
+void APlayerCharacter::UseLargeCrystal()
+{
+	UseCrystal(ECrystalType::Large);
+}
+
+
+void APlayerCharacter::UseCrystal(ECrystalType CrystalType)
+{
+	if (!IsValid(Inventory))
+	{
+		return;
+	}
+
+	Inventory->UseCrystal(CrystalType);
+}
+
+
+void APlayerCharacter::OnCrystalUsed(ECrystalType CrystalType)
+{
+	if (!IsValid(LightMeter))
+	{
+		return;
+	}
+
+	int32 LightAmount = 0;
+	switch (CrystalType)
+	{
+	case ECrystalType::Small:
+		LightAmount = 15;
+		break;
+	case ECrystalType::Medium:
+		LightAmount = 30;
+		break;
+	case ECrystalType::Large:
+		LightAmount = 50;
+		break;
+	}
+
+	LightMeter->AddLightAmount(LightAmount);
+}
+
+
+bool APlayerCharacter::CheckForCrystal()
+{
+	return IsValid(GetFirstCrystalInReach().GetActor());
+}
+
+
+void APlayerCharacter::TakeCrystal()
+{
+	ABaseCrystal* Crystal = Cast<ABaseCrystal>(GetFirstCrystalInReach().GetActor());
+	if (IsValid(Crystal))
+	{
+		Inventory->AddCrystal(Crystal->GetCrystalType(), 1);
+		Crystal->ConditionalBeginDestroy();
+	}
+}
+
+
+FHitResult APlayerCharacter::GetFirstCrystalInReach() const
+{
+	FHitResult Hit;
+	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
+
+	UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		return Hit;
+	}
+
+	World->LineTraceSingleByChannel(
+		Hit,
+		GetPlayerWorldPosition(),
+		GetPlayerReach(),
+		ECollisionChannel::ECC_GameTraceChannel1,
+		TraceParams
+	);
+
+	return Hit;
+}
+
+
+FVector APlayerCharacter::GetPlayerWorldPosition() const
+{
+	FVector PlayerrViewPointLocation = GetOwner()->GetActorLocation();
+	FRotator PlayerViewPointRotation = GetOwner()->GetActorRotation();
+
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		PlayerrViewPointLocation,
+		PlayerViewPointRotation
+	);
+
+	return PlayerrViewPointLocation;
+}
+
+
+FVector APlayerCharacter::GetPlayerReach() const
+{
+	FVector PlayerViewPointLocation = GetOwner()->GetActorLocation();
+	FRotator PlayerViewPointRotation = GetOwner()->GetActorRotation();
+
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		PlayerViewPointLocation,
+		PlayerViewPointRotation
+	);
+
+	return PlayerViewPointLocation + Reach * PlayerViewPointRotation.Vector();
 }
