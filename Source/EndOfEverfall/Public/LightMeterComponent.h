@@ -20,6 +20,7 @@ public:
 	FORCEINLINE float GetMaxLightAmount() { return MaxLightAmount; }
 
 	void AddLightAmount(float Value);
+	void SetIsInLight(bool bInLight);
 
 protected:
 	// Called when the game starts

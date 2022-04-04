@@ -33,9 +33,20 @@ void ULightMeterComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 }
 
 
+void ULightMeterComponent::SetIsInLight(bool bInLight)
+{
+	bIsInLight = bInLight;
+}
+
+
 void ULightMeterComponent::AddLightAmount(float Value)
 {
 	LightAmount = FMath::Min(MaxLightAmount, LightAmount + Value);
+
+	if (OnLightMeterChangedDelegate.IsBound())
+	{
+		OnLightMeterChangedDelegate.Broadcast(LightAmount);
+	}
 }
 
 

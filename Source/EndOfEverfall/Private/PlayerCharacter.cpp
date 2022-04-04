@@ -10,6 +10,7 @@
 #include "InventoryUI.h"
 #include "BaseCrystal.h"
 #include "HelperUI.h"
+#include "LightPillar.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -78,6 +79,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 	{
 		HelperUI->SetClickHelperVisible(CheckForCrystal());
 	}
+
+	ProcessPillarsInRange(DeltaTime);
 }
 
 
@@ -103,6 +106,52 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("UseLargeCrystal", IE_Pressed, this, &APlayerCharacter::UseLargeCrystal);
 
 	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &APlayerCharacter::TakeCrystal);
+}
+
+
+void APlayerCharacter::AddPillar(ALightPillar* PillarToAdd)
+{
+	LightPillars.Add(PillarToAdd);
+}
+
+
+void APlayerCharacter::RemovePillar(ALightPillar* PillarToRemove)
+{
+	if (LightPillars.Contains(PillarToRemove))
+	{
+		LightPillars.Remove(PillarToRemove);
+	}
+}
+
+
+void APlayerCharacter::ProcessPillarsInRange(float DeltaTime)
+{
+	int32 LightPillarsNum = LightPillars.Num();
+
+	if (IsValid(LightMeter))
+	{
+		LightMeter->SetIsInLight(LightPillarsNum > 0);
+	}
+
+	if (LightPillarsNum == 0)
+	{
+		return;
+	}
+
+	for (ALightPillar* Pillar : LightPillars)
+	{
+		if (!Pillar->CanBeDrained())
+		{
+			continue;
+		}
+
+		float DrainAmount = Pillar->GetDrainRate() * DeltaTime;
+		Pillar->DrainLightAmount(DrainAmount);
+		if (IsValid(LightMeter))
+		{
+			LightMeter->AddLightAmount(DrainAmount);
+		}
+	}
 }
 
 

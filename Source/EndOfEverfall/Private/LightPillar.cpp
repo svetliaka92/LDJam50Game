@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "PlayerCharacter.h"
 
 
 ALightPillar::ALightPillar()
@@ -26,14 +27,52 @@ void ALightPillar::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (IsValid(LightRange))
+	{
+		LightRange->OnComponentBeginOverlap.AddDynamic(this, &ALightPillar::OnSphereEntered);
+		LightRange->OnComponentEndOverlap.AddDynamic(this, &ALightPillar::OnSphereExited);
+	}
+
+	bCanBeDrained = LightAmount > 0;
+	OnCanDrainChanged();
 }
 
 
-void ALightPillar::Tick(float DeltaTime)
+void ALightPillar::DrainLightAmount(float Value)
 {
-	Super::Tick(DeltaTime);
+	LightAmount = FMath::Max(0.0f, LightAmount - Value);
 
-	// cast for player from the light range
-	// if player in radius drain light from pillar and give to player
+	if (LightAmount <= 0)
+	{
+		bCanBeDrained = false;
+		OnCanDrainChanged();
+	}
 }
 
+
+void ALightPillar::OnSphereEntered(UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
+	const FHitResult& SweepResult)
+{
+	PlayerInRange = Cast<APlayerCharacter>(OtherActor);
+	if (IsValid(PlayerInRange))
+	{
+		PlayerInRange->AddPillar(this);
+	}
+}
+
+
+void ALightPillar::OnSphereExited(UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex)
+{
+	PlayerInRange = Cast<APlayerCharacter>(OtherActor);
+	if (IsValid(PlayerInRange))
+	{
+		PlayerInRange->RemovePillar(this);
+	}
+}

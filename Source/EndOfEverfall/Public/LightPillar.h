@@ -9,6 +9,7 @@
 class USphereComponent;
 class UBoxComponent;
 class UStaticMeshComponent;
+class APlayerCharacter;
 
 UCLASS()
 class ENDOFEVERFALL_API ALightPillar : public AActor
@@ -18,6 +19,12 @@ class ENDOFEVERFALL_API ALightPillar : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ALightPillar();
+
+	FORCEINLINE float GetDrainRate() { return LightDrainRate; }
+	FORCEINLINE bool CanBeDrained() { return bCanBeDrained; }
+	
+	void DrainLightAmount(float Value);
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -35,8 +42,28 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pillar")
 	float LightAmount = 5000.0f;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pillar")
+	float LightDrainRate = 20.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pillar")
+	bool bCanBeDrained = true;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnCanDrainChanged();
+
+	UFUNCTION()
+	void OnSphereEntered(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnSphereExited(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex);
+
+	APlayerCharacter* PlayerInRange;
 };

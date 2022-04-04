@@ -14,6 +14,7 @@ class UPlayerLightMeter;
 class UInventoryComponent;
 class UInventoryUI;
 class UHelperUI;
+class ALightPillar;
 
 UCLASS()
 class ENDOFEVERFALL_API APlayerCharacter : public ACharacter
@@ -23,6 +24,9 @@ class ENDOFEVERFALL_API APlayerCharacter : public ACharacter
 public:
 	// Sets default values for this pawn's properties
 	APlayerCharacter();
+
+	void AddPillar(ALightPillar* PillarToAdd);
+	void RemovePillar(ALightPillar* PillarToRemove);
 
 protected:
 	virtual void Tick(float DeltaTime) override;
@@ -102,6 +106,10 @@ private:
 	FHitResult GetFirstCrystalInReach() const;
 	FVector GetPlayerWorldPosition() const;
 	FVector GetPlayerReach() const;
+
+	TArray<ALightPillar*> LightPillars;
+
+	void ProcessPillarsInRange(float DeltaTime);
 
 public:	
 	// Called to bind functionality to input
