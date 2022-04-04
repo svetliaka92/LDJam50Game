@@ -33,6 +33,11 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (IsValid(LightMeter))
+	{
+		LightMeter->LightMeterChanged().AddUObject(this, &APlayerCharacter::OnLightAmountChanged);
+	}
+
 	if (IsValid(LightMeterUIClass))
 	{
 		LightMeterUI = CreateWidget<UPlayerLightMeter>(GetWorld(), LightMeterUIClass);
@@ -319,4 +324,10 @@ FVector APlayerCharacter::GetPlayerReach() const
 	);
 
 	return PlayerViewPointLocation + Reach * PlayerViewPointRotation.Vector();
+}
+
+
+void APlayerCharacter::OnLightAmountChanged(float Value)
+{
+	LightAmountChanged(Value);
 }

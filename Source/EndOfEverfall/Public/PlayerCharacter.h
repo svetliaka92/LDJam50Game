@@ -102,6 +102,9 @@ protected:
 
 	bool CheckForCrystal();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void LightAmountChanged(float Value);
+
 private:
 	FHitResult GetFirstCrystalInReach() const;
 	FVector GetPlayerWorldPosition() const;
@@ -110,6 +113,11 @@ private:
 	TArray<ALightPillar*> LightPillars;
 
 	void ProcessPillarsInRange(float DeltaTime);
+
+	UFUNCTION()
+	void OnLightAmountChanged(float Value);
+
+	
 
 public:	
 	// Called to bind functionality to input
