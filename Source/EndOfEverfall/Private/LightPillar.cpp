@@ -41,6 +41,7 @@ void ALightPillar::BeginPlay()
 void ALightPillar::DrainLightAmount(float Value)
 {
 	LightAmount = FMath::Max(0.0f, LightAmount - Value);
+	OnLightAmountChanged();
 
 	if (LightAmount <= 0)
 	{

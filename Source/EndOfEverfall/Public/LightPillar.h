@@ -43,6 +43,9 @@ protected:
 	float LightAmount = 5000.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pillar")
+	float MaxLightAmount = 5000.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pillar")
 	float LightDrainRate = 20.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pillar")
@@ -50,6 +53,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnCanDrainChanged();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnLightAmountChanged();
 
 	UFUNCTION()
 	void OnSphereEntered(UPrimitiveComponent* OverlappedComponent,
