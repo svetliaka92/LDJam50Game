@@ -15,6 +15,7 @@ class UInventoryComponent;
 class UInventoryUI;
 class UHelperUI;
 class ALightPillar;
+class ABaseShade;
 
 UCLASS()
 class ENDOFEVERFALL_API APlayerCharacter : public ACharacter
@@ -27,6 +28,9 @@ public:
 
 	void AddPillar(ALightPillar* PillarToAdd);
 	void RemovePillar(ALightPillar* PillarToRemove);
+
+	void AddShade(ABaseShade* Shade);
+	void RemoveShade(ABaseShade* Shade);
 
 protected:
 	virtual void Tick(float DeltaTime) override;
@@ -111,13 +115,14 @@ private:
 	FVector GetPlayerReach() const;
 
 	TArray<ALightPillar*> LightPillars;
+	TArray<ABaseShade*> Shades;
 
 	void ProcessPillarsInRange(float DeltaTime);
 
 	UFUNCTION()
 	void OnLightAmountChanged(float Value);
 
-	
+	void OnShadeNumberChange();
 
 public:	
 	// Called to bind functionality to input

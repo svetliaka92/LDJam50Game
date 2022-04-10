@@ -10,6 +10,8 @@ public class EndOfEverfall : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG" });
 
+		PublicDependencyModuleNames.AddRange(new string[] { "AIModule", "GameplayTasks" });
+
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI

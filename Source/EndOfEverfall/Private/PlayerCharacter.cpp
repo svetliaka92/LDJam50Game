@@ -11,6 +11,7 @@
 #include "BaseCrystal.h"
 #include "HelperUI.h"
 #include "LightPillar.h"
+#include "BaseShade.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -330,4 +331,40 @@ FVector APlayerCharacter::GetPlayerReach() const
 void APlayerCharacter::OnLightAmountChanged(float Value)
 {
 	LightAmountChanged(Value);
+}
+
+
+void APlayerCharacter::AddShade(ABaseShade* Shade)
+{
+	Shades.Add(Shade);
+
+	OnShadeNumberChange();
+}
+
+
+void APlayerCharacter::RemoveShade(ABaseShade* Shade)
+{
+	if (Shades.Contains(Shade))
+	{
+		Shades.Remove(Shade);
+
+		OnShadeNumberChange();
+	}
+}
+
+
+void APlayerCharacter::OnShadeNumberChange()
+{
+	if (!IsValid(LightMeter))
+	{
+		return;
+	}
+
+	float TotalDecay = 0.0f;
+	for (ABaseShade* Shade : Shades)
+	{
+		TotalDecay += Shade->LightDecayPerSecond;
+	}
+
+	LightMeter->SetAdditionalDecayAmount(TotalDecay);
 }

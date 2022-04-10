@@ -22,6 +22,8 @@ public:
 	void AddLightAmount(float Value);
 	void SetIsInLight(bool bInLight);
 
+	void SetAdditionalDecayAmount(float Value);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -49,4 +51,5 @@ private:
 	float LightAmount = 0.0f;
 	bool bIsInLight = false;
 	
+	float TotalEnemyDecayPerSecond = 0.0f;
 };

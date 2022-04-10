@@ -52,10 +52,16 @@ void ULightMeterComponent::AddLightAmount(float Value)
 
 void ULightMeterComponent::DecayLightAmount(float Delta)
 {
-	LightAmount -= BaseDecayingSpeed * Delta;
+	LightAmount -= BaseDecayingSpeed * Delta + TotalEnemyDecayPerSecond * Delta;
 
 	if (OnLightMeterChangedDelegate.IsBound())
 	{
 		OnLightMeterChangedDelegate.Broadcast(LightAmount);
 	}
+}
+
+
+void ULightMeterComponent::SetAdditionalDecayAmount(float Value)
+{
+	TotalEnemyDecayPerSecond = Value;
 }

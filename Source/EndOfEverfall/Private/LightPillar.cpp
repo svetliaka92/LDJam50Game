@@ -10,8 +10,6 @@
 
 ALightPillar::ALightPillar()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	RootComponent = BoxComponent;
 
@@ -58,7 +56,7 @@ void ALightPillar::OnSphereEntered(UPrimitiveComponent* OverlappedComponent,
 	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	PlayerInRange = Cast<APlayerCharacter>(OtherActor);
+	APlayerCharacter* PlayerInRange = Cast<APlayerCharacter>(OtherActor);
 	if (IsValid(PlayerInRange))
 	{
 		PlayerInRange->AddPillar(this);
@@ -71,7 +69,7 @@ void ALightPillar::OnSphereExited(UPrimitiveComponent* OverlappedComponent,
 	UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex)
 {
-	PlayerInRange = Cast<APlayerCharacter>(OtherActor);
+	APlayerCharacter* PlayerInRange = Cast<APlayerCharacter>(OtherActor);
 	if (IsValid(PlayerInRange))
 	{
 		PlayerInRange->RemovePillar(this);

@@ -25,7 +25,6 @@ public:
 	
 	void DrainLightAmount(float Value);
 
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -70,6 +69,4 @@ protected:
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
-
-	APlayerCharacter* PlayerInRange;
 };
